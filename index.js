@@ -1,38 +1,51 @@
-const webSocketServer = require('websocket').server;
-const http = require("http")
-const websocketServerPort = 8000;
+require('dotenv')
+const express = require('express');
 
-const server = http.createServer();
+// const ws = require('ws');
+const management = require('./handler/management')
 
 
-server.listen(websocketServerPort)
-console.log(`Listen on port ${websocketServerPort}`);
+const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+  cors: {
+    origins: ['http://localhost:3000']
+  }
+});
 
-const wsServer = new webSocketServer({
-    httpServer: server
+app.use(express.json())
+
+app.use('/', (req,res) => {
+  res.send("im on")
 })
+app.use('/management',management)
 
-const clients = {};
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.emit('bla')
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+});
 
-wsServer.on('request', (request) => {
-    const connection = request.accept(null, request.origin);
+http.listen(8000, () => {
+  console.log('listening on *:8000');
+});
+// const wsServer = new ws.Server({ noServer: true });
+// wsServer.on('connection', socket => {
+//   socket.on('message', message => console.log(message));
+// });
 
-    connection.on('message', (message) => {
-        console.log(message);
-        connection.sendUTF(message.utf8Data)
-    })
-})
+// const client = new ws('ws://localhost:3000');
 
+// client.on('open', () => {
+//   // Causes the server to print "Hello"
+//   client.send('Hello');
+// });
 
-
-// const express = require('express')
-// const app = express()
-// const port = 2000
-
-// app.get('/', (req, res) => {
-//   res.send('Hello World!')
-// })
-
-// app.listen(port, () => {
-//   console.log(`Example app listening at http://localhost:${port}`)
-// })
+// const server = app.listen(8000);
+// server.on('upgrade', (request, socket, head) => {
+//   wsServer.handleUpgrade(request, socket, head, socket => {
+//     wsServer.emit('connection', socket, request);
+//   });
+// });
