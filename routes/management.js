@@ -3,10 +3,10 @@ const checkIsAdmin = require('../handler/management')
 
 const router = express.Router()
 
-router.post('/password', (req, res) => {
+router.post('/password', async (req, res) => {
   try {
-    checkIsAdmin(req)
-    res.send("OK")
+    const response = await checkIsAdmin(req,res)
+    res.send(response)
   } catch (err) {
     throw err
   }
